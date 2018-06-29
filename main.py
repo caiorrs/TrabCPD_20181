@@ -3,6 +3,7 @@ import re
 from tokenize import generate_tokens
 import io
 import copy
+import unidecode
 
 
 def leCSVDict():
@@ -39,11 +40,12 @@ def tweetnScore(content):
 def formatTweet(tweets, total_tweets):
 
     for tweet in range(total_tweets):
-        #print("TWEET INTEIRO: {}".format(tweets[tweet]))
-
+        # Troca caracteres especificados por espaço
         tweets[tweet] = tweets[tweet].translate({ord(i): ' ' for i in '?!@#$.,;:-\'\"(){}[]~'}).lower()
-
+        # Remove palavras de tamanho <= 2
         tweets[tweet] = re.sub(r'\b\w{1,2}\b', '', tweets[tweet])
+        #remove acentos das palavras
+        tweets[tweet] = unidecode.unidecode(tweets[tweet])
 
         # tweets estão sem palavras de tamanho <= 2, sem caracteres especiais soltos e foram transformados para minúsculo
 
@@ -87,6 +89,8 @@ def main():
     print(formatted_tweets)
 
     word_dict = addDict(formatted_tweets, tweet_score, total_tweets)
+
+    # Quando precisar fazer a busca de chaves em tweet, será necessário remover os acentos dos tweets (para comparação)
 
 
 if __name__ == "__main__":
