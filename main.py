@@ -1,6 +1,6 @@
 import csv
 import re
-# from src.importer import Importer
+
 
 def main():
     input_file = input("Digite o nome do arquivo de entrada: ")
@@ -18,16 +18,24 @@ def main():
 
     # remove palavras de tamanho <= 2
     for item in range(len(tweet_content)):
+        print("TWEET INTEIRO: {}".format(tweet_content[item]))
         tweet_content[item] = re.sub(r'\b\w{1,2}\b', '', tweet_content[item])
+
+        tweet_content[item] = tweet_content[item].translate({ord(i): ' ' for i in '!@#$.,;:-\'\"'}).lower()
+        print("TWEET REDUZIDO: {}\n\n\n".format(tweet_content[item]))
         tweet_score[item] = ' '.join(tweet_score[item].split())
 
-    #for tweet in range(len(tweet_content)):
+    # for tweet in range(len(tweet_content)):
     #    print("{},{}".format(tweet_content[tweet], tweet_score[tweet]))
-
 
     total_tweets = len(tweet_content)
 
-    for tweet in range()
+    for tweet in range(total_tweets):
+        tweet_words = tweet_content[tweet].split()
+        num_words = len(tweet_words)
+        for word in range(num_words):
+            # print("PALAVRA: {}---SCORE: {}".format(tweet_words[word], tweet_score[tweet]))
+            exit()
 
 
 if __name__ == "__main__":
