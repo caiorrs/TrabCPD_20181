@@ -1,3 +1,6 @@
+#!/usr/bin/python3.6
+# -*- coding: utf-8 -*-
+
 import csv
 import re
 import tokenize
@@ -55,7 +58,6 @@ class Trie:
     def search(self, key):
 
         # Busca uma chave na trie, retorna T ou F
-
         pCrawl = self.root
         length = len(key)
         for level in range(length):
@@ -101,11 +103,12 @@ def formatTweet(tweets, total_tweets):
 
     for tweet in range(total_tweets):
         # Troca caracteres especificados por espaço
-        tweets[tweet] = tweets[tweet].translate({ord(i): ' ' for i in "?!@#$.,;:-\'\"`(){}[]~*^%&1234567890=|/+\\"}).lower()
+        tweets[tweet] = tweets[tweet].translate({ord(i): ' ' for i in "?!#@$.,;:-\'\"`(){}[]~*^%&1234567890=|/+\\<>“”…"}).lower()
         # Remove palavras de tamanho <= 2
         tweets[tweet] = re.sub(r'\b\w{1,2}\b', '', tweets[tweet])
         #remove acentos das palavras
         tweets[tweet] = unidecode.unidecode(tweets[tweet])
+
 
         # tweets estão sem palavras de tamanho <= 2, sem caracteres especiais soltos e foram transformados para minúsculo
 
@@ -140,7 +143,6 @@ def tokenizer(tweets, trie):
         readline = io.StringIO(tweets[tweet]).readline
         for token in tokenize.generate_tokens(readline):
             if len(token[1]) > 2 and len(token[1].split()) > 0:
-                print(token[1])
                 tokens.append(token[1])
                 if not trie.search(token[1]):
                     trie.insert(token[1])
