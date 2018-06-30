@@ -6,6 +6,66 @@ import copy
 import unidecode
 
 
+class TrieNode:
+    """Classe que define um nodo"""
+
+    def __init__(self):
+        # inicializa os filhos com vazio
+        self.children = [None] * 26
+
+        # isEndOfWord is True if node represent the end of the word
+        self.isEndOfWord = False
+
+
+class Trie:
+    """Classe que contém funções para uma Trie"""
+
+    def __init__(self):
+        self.root = self.getNode()
+
+    def getNode(self):
+
+        # Retorna um nodo
+        return TrieNode()
+
+    def _charToIndex(self, ch):
+
+        # Converte o caractere atual em deslocamento (para chaves minúsculas)
+
+        return ord(ch) - ord('a')
+
+    def insert(self, key):
+
+        # Se a chave não está na Trie, insere ela
+        # Se a chave é um prefixo de um nodo, só marca ele como folha
+
+        pCrawl = self.root
+        length = len(key)
+        for level in range(length):
+            index = self._charToIndex(key[level])
+
+            # adiciona o caractere atual na árvore, se nao estiver
+            if not pCrawl.children[index]:
+                pCrawl.children[index] = self.getNode()
+            pCrawl = pCrawl.children[index]
+
+        # marca ultimo nodo como folha
+        pCrawl.isEndOfWord = True
+
+    def search(self, key):
+
+        # Busca uma chave na trie, retorna T ou F
+
+        pCrawl = self.root
+        length = len(key)
+        for level in range(length):
+            index = self._charToIndex(key[level])
+            if not pCrawl.children[index]:
+                return False
+            pCrawl = pCrawl.children[index]
+
+        return pCrawl != None and pCrawl.isEndOfWord
+
 def leCSVDict():
 
     input_file = input("Digite o nome do arquivo CSV (para dicionario): ")
@@ -72,7 +132,7 @@ def addDict(tweets, scores, total_tweets):
 
     return words_n_scores
 
-def tokenizer(tweets):
+def tokenizer(tweets, trie):
 
     tokens = []
 
@@ -82,6 +142,13 @@ def tokenizer(tweets):
             if len(token[1]) > 2 and len(token[1].split()) > 0:
                 print(token[1])
                 tokens.append(token[1])
+                if not trie.search(token[1]):
+                    trie.insert(token[1])
+                else:
+                    print("TOKEN JA NA TRIE!!!")
+                #alterar informações do token no dicionário caso já exista
+                #adicionar tokens ao dicionario, se nao existir
+
 
     return tokens
 
@@ -101,7 +168,8 @@ def main():
 
     print(formatted_tweets)
 
-    tokens = tokenizer(formatted_tweets)
+    trie = Trie()
+    tokens = tokenizer(formatted_tweets, trie)
 
     #word_dict = addDict(formatted_tweets, tweet_score, total_tweets)
 
