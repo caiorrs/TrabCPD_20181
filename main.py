@@ -1,6 +1,6 @@
 import csv
 import re
-from tokenize import generate_tokens
+import tokenize
 import io
 import copy
 import unidecode
@@ -41,7 +41,7 @@ def formatTweet(tweets, total_tweets):
 
     for tweet in range(total_tweets):
         # Troca caracteres especificados por espaço
-        tweets[tweet] = tweets[tweet].translate({ord(i): ' ' for i in '?!@#$.,;:-\'\"(){}[]~'}).lower()
+        tweets[tweet] = tweets[tweet].translate({ord(i): ' ' for i in "?!@#$.,;:-\'\"`(){}[]~*^%&1234567890=|/+\\"}).lower()
         # Remove palavras de tamanho <= 2
         tweets[tweet] = re.sub(r'\b\w{1,2}\b', '', tweets[tweet])
         #remove acentos das palavras
@@ -72,6 +72,19 @@ def addDict(tweets, scores, total_tweets):
 
     return words_n_scores
 
+def tokenizer(tweets):
+
+    tokens = []
+
+    for tweet in range(len(tweets)):
+        readline = io.StringIO(tweets[tweet]).readline
+        for token in tokenize.generate_tokens(readline):
+            if len(token[1]) > 2 and len(token[1].split()) > 0:
+                print(token[1])
+                tokens.append(token[1])
+
+    return tokens
+
 
 def main():
 
@@ -88,7 +101,9 @@ def main():
 
     print(formatted_tweets)
 
-    word_dict = addDict(formatted_tweets, tweet_score, total_tweets)
+    tokens = tokenizer(formatted_tweets)
+
+    #word_dict = addDict(formatted_tweets, tweet_score, total_tweets)
 
     # Quando precisar fazer a busca de chaves em tweet, será necessário remover os acentos dos tweets (para comparação)
 
