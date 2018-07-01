@@ -16,9 +16,15 @@ class TrieNode:
         # inicializa os filhos com vazio
         self.children = [None] * 26
 
-        # isEndOfWord is True if node represent the end of the word
+        # se for T é uma folha, se F é um nodo intermediário
         self.isEndOfWord = False
 
+        #sentimento inicializado com 0
+        self.score = 0
+        #sentimento acumulado inicializado com 0
+        self.acc_score = 0
+        #aparição em tweets inicializado com 0
+        self.tweets_in = 0
 
 class Trie:
     """Classe que contém funções para uma Trie"""
@@ -37,9 +43,8 @@ class Trie:
 
         return ord(ch) - ord('a')
 
-    def insert(self, key):
+    def insert(self, key, tweet_score):
 
-        # Se a chave não está na Trie, insere ela
         # Se a chave é um prefixo de um nodo, só marca ele como folha
 
         pCrawl = self.root
@@ -54,6 +59,10 @@ class Trie:
 
         # marca ultimo nodo como folha
         pCrawl.isEndOfWord = True
+        pCrawl.acc_score = pCrawl.acc_score + int(tweet_score)
+        pCrawl.tweets_in = pCrawl.tweets_in + 1
+        pCrawl.score = pCrawl.acc_score / pCrawl.tweets_in
+
 
     def search(self, key):
 
@@ -67,6 +76,30 @@ class Trie:
             pCrawl = pCrawl.children[index]
 
         return pCrawl != None and pCrawl.isEndOfWord
+
+    def editNode(self, key, tweet_score):
+
+        # Buscar palavra na arvore
+        # quando achar, alterar informações do último nodo (última letra da palavra)
+
+
+        # Busca uma chave na trie, retorna T ou F
+        pCrawl = self.root
+        length = len(key)
+        for level in range(length):
+            index = self._charToIndex(key[level])
+            if not pCrawl.children[index]:
+                return False
+            pCrawl = pCrawl.children[index]
+
+        pCrawl.acc_score = pCrawl.acc_score + int(tweet_score)
+        pCrawl.tweets_in = pCrawl.tweets_in + 1
+        pCrawl.score = pCrawl.acc_score / pCrawl.tweets_in
+
+        print("PALAVRA: {} --- ACC_SCORE: {} --- TWEETS_IN: {} --- SCORE: {}".format(key, pCrawl.acc_score, pCrawl.tweets_in, pCrawl.score))
+
+
+
 
 def leCSVDict():
 
@@ -115,27 +148,7 @@ def formatTweet(tweets, total_tweets):
 
     return tweets
 
-def addDict(tweets, scores, total_tweets):
-    #tweets já formatados
-
-    words_n_scores = {}
-
-    for tweet in range(total_tweets):
-        words = tweets[tweet].split()
-        for word in words:
-            #palavra não existe no dicionário
-            if word not in words_n_scores.keys():
-                words_n_scores[word] = [float(scores[tweet]), 1*float(scores[tweet]), 1]
-            #palavra já está no dicionário
-            #else:
-                #print("!!!JA ESTÁ NO DICIONARIO!!!")
-    print("DICIONARIO")
-    print(words_n_scores)
-
-
-    return words_n_scores
-
-def tokenizer(tweets, trie):
+def tokenizer(tweets, trie, tweet_score):
 
     tokens = []
 
@@ -144,12 +157,14 @@ def tokenizer(tweets, trie):
         for token in tokenize.generate_tokens(readline):
             if len(token[1]) > 2 and len(token[1].split()) > 0:
                 tokens.append(token[1])
+                # adicionar tokens ao dicionario, se nao existir
                 if not trie.search(token[1]):
-                    trie.insert(token[1])
+                    trie.insert(token[1], tweet_score[tweet])
                 else:
-                    print("TOKEN JA NA TRIE!!!")
+                    trie.editNode(token[1], tweet_score[tweet])
+                    print("PALAVRA JA NA TRIE!!!")
                 #alterar informações do token no dicionário caso já exista
-                #adicionar tokens ao dicionario, se nao existir
+
 
 
     return tokens
@@ -171,9 +186,7 @@ def main():
     print(formatted_tweets)
 
     trie = Trie()
-    tokens = tokenizer(formatted_tweets, trie)
-
-    #word_dict = addDict(formatted_tweets, tweet_score, total_tweets)
+    tokens = tokenizer(formatted_tweets, trie, tweet_score)
 
     # Quando precisar fazer a busca de chaves em tweet, será necessário remover os acentos dos tweets (para comparação)
 
