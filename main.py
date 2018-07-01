@@ -8,6 +8,7 @@ import io
 import copy
 import unidecode
 
+
 def menu():
     """MENU DE OPÇÕES"""
 
@@ -64,18 +65,15 @@ class Trie:
     def _charToIndex(self, ch):
 
         # Converte o caractere atual em deslocamento (para chaves minúsculas)
-
         return ord(ch) - ord('a')
 
     def insert(self, key, tweet_score):
 
         # Se a chave é um prefixo de um nodo, só marca ele como folha
-
         pCrawl = self.root
         length = len(key)
         for level in range(length):
             index = self._charToIndex(key[level])
-
             # adiciona o caractere atual na árvore, se nao estiver
             if not pCrawl.children[index]:
                 pCrawl.children[index] = self.getNode()
@@ -86,9 +84,6 @@ class Trie:
         pCrawl.acc_score = pCrawl.acc_score + int(tweet_score)
         pCrawl.tweets_in = pCrawl.tweets_in + 1
         pCrawl.score = pCrawl.acc_score / pCrawl.tweets_in
-
-        #print("PALAVRA: {} --- ACC_SCORE: {} --- TWEETS_IN: {} --- SCORE: {}".format(key, pCrawl.acc_score, pCrawl.tweets_in, pCrawl.score))
-
 
     def search(self, key):
 
@@ -139,19 +134,28 @@ class Trie:
 
 def leCSVDict(filename):
 
-    with open(filename) as csvfile:
-        tweet_reader = csv.reader(csvfile)
-        content_list = list(tweet_reader)
+    try:
+        with open(filename) as csvfile:
+            tweet_reader = csv.reader(csvfile)
+            content_list = list(tweet_reader)
 
-    return content_list
+        return content_list
+    except IOError:
+        print("Erro ao abrir o arquivo especificado!!!")
+        exit(1)
+
 
 def leCSVTweet(filename):
 
-    with open(filename) as csvfile:
-        tweet_reader = csv.reader(csvfile)
-        content_list = list(tweet_reader)
+    try:
+        with open(filename) as csvfile:
+            tweet_reader = csv.reader(csvfile)
+            content_list = list(tweet_reader)
 
-    return content_list
+        return content_list
+    except IOError:
+        print("Erro ao abrir o arquivo especificado!!!")
+        exit(1)
 
 def writeCSVTweet(filename, orig_tweet, tweet_score):
 
@@ -192,10 +196,7 @@ def formatTweet(tweets, total_tweets):
         # Remove palavras de tamanho <= 2
         tweets[tweet] = re.sub(r'\b\w{1,2}\b', '', tweets[tweet])
 
-
-
         # tweets estão sem palavras de tamanho <= 2, sem caracteres especiais soltos e foram transformados para minúsculo
-
 
     return tweets
 
@@ -215,9 +216,6 @@ def addDict(tweets, trie, tweet_score):
                 else:
                     # alterar informações do token no dicionário caso já exista
                     trie.editNode(token[1], tweet_score[tweet])
-                    #print("PALAVRA JA NA TRIE!!!")
-
-
 
 def calculateSentiment(tweets, trie):
 
@@ -225,13 +223,10 @@ def calculateSentiment(tweets, trie):
 
     for tweet in range(len(tweets)):
         tweets[tweet] = tweets[tweet].split()
-        #print(tweets[tweet])
         for word in tweets[tweet]:
             found = trie.searchScore(word)
-            #print("found = {}".format(found))
             if (found != 0):
                 # se achou a palavra e score não é zero, somar o score dela
-                #print("word = {}".format(word))
                 sum[tweet] = sum[tweet] + found
     # normaliza sentimentos para -1, 0, 1
     for soma in range(len(sum)):
@@ -244,7 +239,6 @@ def calculateSentiment(tweets, trie):
             # se não achou a palavra ou score é zero, não fazer nada (somar 0)
 
     return sum
-
 
 def main():
 
@@ -289,15 +283,6 @@ def main():
             # se não estiver, adiciona à árvore com as informações do tweet (acc_score = score do tweet, tweets_in = 1, score = acc_score / tweets_in)
             addDict(formatted_tweets, trie, tweet_score)
 
-            # uma forma de armazenar a árvore - percorrer ela em largura, sempre que achar folha em algum nível, armazenar ela e informações
-            # separando da forma PALAVRA, SCORE, ACC_SCORE, TWEETS_IN (4 colunas)
-            #
-            # uma forma de leitura - ler palavra até a ",", marcar como folha e inserir informações
-
-
-
-            # Quando precisar fazer a busca de chaves em tweet, será necessário remover os acentos dos tweets (para comparação)
-
         if option == 2:
 
             tweet_content = tweetsList(content_list)
@@ -310,9 +295,6 @@ def main():
 
             # lista de somas referentes ao tweet. Por exemplo o tweet da linha 0 terá sua soma em tweet_sum[0]
             tweet_sum = calculateSentiment(formatted_tweets, trie)
-
-            #for item in range(len(tweet_sum)):
-                #print("TWEET: {} \nSCORE: {}\n\n".format(tweet_content[item], tweet_sum[item]))
 
             writeCSVTweet(input_file, tweets_copy, tweet_sum)
 
