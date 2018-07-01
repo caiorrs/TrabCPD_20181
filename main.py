@@ -8,7 +8,6 @@ import io
 import copy
 import unidecode
 
-
 class TrieNode:
     """Classe que define um nodo"""
 
@@ -62,6 +61,8 @@ class Trie:
         pCrawl.acc_score = pCrawl.acc_score + int(tweet_score)
         pCrawl.tweets_in = pCrawl.tweets_in + 1
         pCrawl.score = pCrawl.acc_score / pCrawl.tweets_in
+
+        print("PALAVRA: {} --- ACC_SCORE: {} --- TWEETS_IN: {} --- SCORE: {}".format(key, pCrawl.acc_score, pCrawl.tweets_in, pCrawl.score))
 
 
     def search(self, key):
@@ -187,6 +188,16 @@ def main():
 
     trie = Trie()
     tokens = tokenizer(formatted_tweets, trie, tweet_score)
+
+    s_trie = str(trie)
+    print("\n\n\nS_TRIE: {}".format(s_trie))
+
+    #uma forma de armazenar a árvore - percorrer ela em largura, sempre que achar folha em algum nível, armazenar ela e informações
+    # separando da forma PALAVRA, SCORE, ACC_SCORE, TWEETS_IN (4 colunas)
+    #
+    # uma forma de leitura - ler palavra até a ",", marcar como folha e inserir informações
+
+
 
     # Quando precisar fazer a busca de chaves em tweet, será necessário remover os acentos dos tweets (para comparação)
 
