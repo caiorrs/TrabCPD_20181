@@ -140,22 +140,31 @@ class arquivoInvertido:
     def __init__(self):
         self.lista = []
         
-    def insertWord():
+    def insertWord(self):
         # Adiciona nova lista de documentos ao final da lista existente
         # para ser relacionado a nova palavra e retorna o indice de tal palavra no arquivo invertido
         novalista = []
         self.lista.append(novalista)
         return len(self.lista) - 1
         
-    def insertDoc(indice, document):
+    def insertDoc(self, indice, document):
         # Insere novo documento em que a palavra aparece na lista relativa a palavra
         self.lista[indice].append(document)
     
-    def returnTweets(indice):
+    def returnTweets(self, file, indice):
         # Retorna lista de tweets no indice passado
-        return self.lista[indice]
+        listaTweets = []
+        with open(file) as fp:
+            for document in self.lista[indice]:
+                for i, line in enumerate(fp):
+                    if i == document:
+                        linha = fp.readline()
+                        listaTweets.append(linha)
+                    elif i > document:
+                        break
+        return listaTweets
     
-    def returnTweetsFeel(file, indice, sentimento):
+    def returnTweetsFeel(self, file, indice, sentimento):
         # Retorna lista de tweets no indice com sentimento específico
         # file é o nome do arquivo com tweets com sentimento, indice é o indice dado pra palavra, sentimento é o desejado para pesquisa
         listaTweets = []
@@ -163,7 +172,7 @@ class arquivoInvertido:
             for document in self.lista[indice]:
                 for i, line in enumerate(fp):
                     if i == document:
-                        linha = fp.readline
+                        linha = fp.readline()
                         tweetAndFeel = linha.split(';')
                         if tweetAndFeel[1] == sentimento:
                             listaTweets.append(linha)
@@ -211,7 +220,6 @@ class TrieArquivo:
         length = len(key)
         for level in range(length):
             index = self._charToIndex(key[level])
-
             # adiciona o caractere atual na árvore, se nao estiver
             if not pCrawl.children[index]:
                 pCrawl.children[index] = self.getNode()
@@ -281,8 +289,8 @@ def writeCSVTweet(filename, orig_tweet, tweet_score):
 def writeCSVSearchResults(filename, tweets):
     out_file = filename.strip(".csv")+"_search.csv"
     with open(out_file, 'w') as f:
-        for intem in range(len(tweets)):
-            f.write(tweets+"\n")
+        for item in range(len(tweets)):
+            f.write(tweets[item]+"\n")
 
 def tweetnScore(content):
 
@@ -338,7 +346,6 @@ def addDict(tweets, trie, tweet_score):
                     # alterar informações do token no dicionário caso já exista
                     trie.editNode(token[1], tweet_score[tweet])
                     #print("PALAVRA JA NA TRIE!!!")
-
 
 
 def calculateSentiment(tweets, trie, trieArquivo, arqInvert):
@@ -454,16 +461,16 @@ def main():
         if option == 3:
         
             searchResults = []
-            
-            if not (trieArquivo and arqInvert):
-                tweet_content = tweetsList(content_list)
-                total_tweets = len(tweet_content)
-                formatted_tweets = formatTweet(tweet_content, total_tweets)
-                tweet_sum, trieArquivo, arqInvert = calculateSentiment(formatted_tweets, trie, trieArquivo, arqInvert)
+            #if not (trieArquivo and arqInvert):
+                
+            tweet_content = tweetsList(content_list)
+            total_tweets = len(tweet_content)
+            formatted_tweets = formatTweet(tweet_content, total_tweets)
+            tweet_sum, trieArquivo, arqInvert = calculateSentiment(formatted_tweets, trie, trieArquivo, arqInvert)
             
             indice = trieArquivo.searchIndice(searchWord)
-            if not indice == -1:
-                searchResults = arqInvert.returnTweets(indice)
+            if indice != -1:
+                searchResults = arqInvert.returnTweets(input_file, indice)
             
             
             writeCSVSearchResults(input_file, searchResults)
