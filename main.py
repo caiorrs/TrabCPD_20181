@@ -135,7 +135,42 @@ class Trie:
 
         return pCrawl.score
 
-
+class arquivoInvertido:
+	"""Classe relativa ao arquivo invertido"""
+	def __init__(self):
+		self.lista = []
+		
+	def insertWord():
+		# Adiciona nova lista de documentos ao final da lista existente
+		# para ser relacionado a nova palavra e retorna o indice de tal palavra no arquivo invertido
+		novalista = []
+		self.lista.append(novalista)
+		return len(self.lista) - 1
+		
+	def insertDoc(indice, document):
+		# Insere novo documento em que a palavra aparece na lista relativa a palavra
+		self.lista[indice].append(document)
+	
+	def returnTweets(indice):
+		# Retorna lista de tweets no indice passado
+		return self.lista[indice]
+	
+	def returnTweetsFeel(file, indice, sentimento):
+		# Retorna lista de tweets no indice com sentimento específico
+		# file é o nome do arquivo com tweets com sentimento, indice é o indice dado pra palavra, sentimento é o desejado para pesquisa
+		listaTweets = []
+		with file open as fp
+			for document in self.lista[indice]:
+				for i, line in enumerate(fp):
+					if i == document:
+						linha = fp.readline
+						tweetAndFeel = linha.split(';')
+						if tweetAndFeel[1] == sentimento:
+							listaTweets.append(linha)
+					elif i > document:
+						break
+		
+		return listaTweets
 
 def leCSVDict(filename):
 
