@@ -130,8 +130,6 @@ class Trie:
 
         return pCrawl.score
 
-
-
 def leCSVDict(filename):
 
     try:
