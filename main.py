@@ -289,6 +289,16 @@ def writeCSVTweet(filename, orig_tweet, tweet_score):
         with open(out_file, 'w') as f:
             for item in range(len(orig_tweet)):
                 f.write(orig_tweet[item]+";"+str(tweet_score[item])+"\n")
+    else:
+        print("Erro ao escrever csv, numero de tweets e numero de sentimentos é diferente")
+        exit(1)
+
+def writeCSVOrigTweet(orig_tweet):
+
+    with open("todosTweets.csv", 'a') as f:
+        for item in range(len(orig_tweet)):
+            f.write(orig_tweet[item]+"\n")
+        print("Caractere separador é ';'")
 
 def writeCSVSearchResults(filename, tweets):
     out_file = filename.strip(".csv")+"_search.csv"
@@ -296,25 +306,25 @@ def writeCSVSearchResults(filename, tweets):
         for item in range(len(tweets)):
             f.write(tweets[item])
 
-def tweetnScore(content):
+def tweetnScore(content, scores):
 
-    tweets = []
-    score = []
 
-    for line in content:
-        tweets.append(line[0])
-        score.append(line[1])
 
-    return tweets, score
+    if scores:
+        print("TEM ESCORES!!!")
+        tweets = []
+        score = []
+        for line in content:
+            tweets.append(line[0])
+            score.append(line[1])
+        return tweets, score
 
-def tweetsList(content):
-
-    tweets = []
-
-    for line in content:
-        tweets.append(line[0])
-
-    return tweets
+    else:
+        print("NAO TEM ESCORES!!!")
+        tweets = []
+        for line in content:
+            tweets.append(line[0])
+        return tweets
 
 def formatTweet(tweets, total_tweets):
 
@@ -411,9 +421,10 @@ def main():
             flag_end = 1
 
         if option == 1:
-
+            scores = 1
             # tweets em uma lista e scores em outra
-            tweet_content, tweet_score = tweetnScore(content_list)
+            tweet_content, tweet_score = tweetnScore(content_list, scores)
+            writeCSVOrigTweet(tweet_content)
 
             # número de tweets no arquivo
             total_tweets = len(tweet_content)
@@ -428,7 +439,10 @@ def main():
 
         if option == 2:
 
-            tweet_content = tweetsList(content_list)
+            scores = 0
+            # tweets em uma lista e scores em outra
+            tweet_content = tweetnScore(content_list, scores)
+            writeCSVOrigTweet(tweet_content)
 
             tweets_copy = copy.deepcopy(tweet_content)
 
