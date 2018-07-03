@@ -8,6 +8,7 @@ import io
 import copy
 import unidecode
 
+
 def menu():
     """MENU DE OPÇÕES"""
 
@@ -15,7 +16,7 @@ def menu():
     print("1 - Abrir arquivo para dicionário")
     print("2 - Abrir arquivo para determinar sentimentos")
     print("3 - Buscar tweets por palavra")
-    print("4 - Buscar tweets por palavra e polaridade (+.-.0)")
+    print("4 - Buscar tweets por palavra e polaridade (+,-,0)")
     print("5 - Sair do programa")
     print("\n\n\n")
     option = int(input("Digite a opção desejada: "))
@@ -26,7 +27,7 @@ def menu():
         print("1 - Abrir arquivo para dicionário")
         print("2 - Abrir arquivo para determinar sentimentos")
         print("3 - Buscar tweets por palavra")
-        print("4 - Buscar tweets por palavra e polaridade (+.-.0)")
+        print("4 - Buscar tweets por palavra e polaridade (+,-,0)")
         print("5 - Sair do programa")
         print("\n\n\n")
         option = int(input("Digite a opção desejada: "))
@@ -64,13 +65,11 @@ class Trie:
     def _charToIndex(self, ch):
 
         # Converte o caractere atual em deslocamento (para chaves minúsculas)
-
         return ord(ch) - ord('a')
 
     def insert(self, key, tweet_score):
 
         # Se a chave é um prefixo de um nodo, só marca ele como folha
-
         pCrawl = self.root
         length = len(key)
         for level in range(length):
@@ -85,9 +84,6 @@ class Trie:
         pCrawl.acc_score = pCrawl.acc_score + int(tweet_score)
         pCrawl.tweets_in = pCrawl.tweets_in + 1
         pCrawl.score = pCrawl.acc_score / pCrawl.tweets_in
-
-        #print("PALAVRA: {} --- ACC_SCORE: {} --- TWEETS_IN: {} --- SCORE: {}".format(key, pCrawl.acc_score, pCrawl.tweets_in, pCrawl.score))
-
 
     def search(self, key):
 
@@ -134,147 +130,30 @@ class Trie:
 
         return pCrawl.score
 
-class arquivoInvertido:
-    """Classe relativa ao arquivo invertido"""
-    def __init__(self):
-        self.lista = []
-        
-    def insertWord(self):
-        # Adiciona nova lista de documentos ao final da lista existente
-        # para ser relacionado a nova palavra e retorna o indice de tal palavra no arquivo invertido
-        novalista = []
-        self.lista.append(novalista)
-        return len(self.lista) - 1
-        
-    def insertDoc(self, indice, document):
-        # Insere novo documento em que a palavra aparece na lista relativa a palavra
-        self.lista[indice].append(document)
-    
-    def returnTweets(self, file, indice):
-        # Retorna lista de tweets no indice passado
-        listaTweets = []
-        with open(file) as fp:
-            #print("\n{}\n".format(self.lista[indice]))
-            for document in self.lista[indice]:
-                for i, line in enumerate(fp):
-                    if i == document:
-                        listaTweets.append(line)
-                    elif i > document:
-                        break
-        return listaTweets
-    
-    def returnTweetsFeel(self, file, indice, sentimento):
-        # Retorna lista de tweets no indice com sentimento específico
-        # file é o nome do arquivo com tweets com sentimento, indice é o indice dado pra palavra, sentimento é o desejado para pesquisa
-        listaTweets = []
-        with open(file) as fp:
-            for document in self.lista[indice]:
-                for i, line in enumerate(fp):
-                    if i == document:
-                        tweetAndFeel = line.split(';')
-                        if tweetAndFeel[1] == sentimento:
-                            listaTweets.append(line)
-                    elif i > document:
-                        break
-        
-        return listaTweets
-
-class TrieNodeArquivo:
-    """Classe que define um nodo na estrutura de acesso ao arquivo invertido"""
-
-    def __init__(self):
-        # inicializa os filhos com vazio
-        self.children = [None] * 26
-
-        # se for T é uma folha, se F é um nodo intermediário
-        self.isEndOfWord = False
-
-        #indice inicializado como -1
-        self.indice = -1
-
-class TrieArquivo:
-    """Classe que contém funções para Trie de acesso ao arquivo invertido"""
-
-    def __init__(self):
-        self.root = self.getNode()
-        self.lastIndex = 0
-        
-    def getNode(self):
-
-        # Retorna um nodo
-        return TrieNodeArquivo()
-
-    def _charToIndex(self, ch):
-
-        # Converte o caractere atual em deslocamento (para chaves minúsculas)
-
-        return ord(ch) - ord('a')
-
-    def insert(self, key):
-
-        # Se a chave é um prefixo de um nodo, só marca ele como folha
-
-        pCrawl = self.root
-        length = len(key)
-        for level in range(length):
-            index = self._charToIndex(key[level])
-            # adiciona o caractere atual na árvore, se nao estiver
-            if not pCrawl.children[index]:
-                pCrawl.children[index] = self.getNode()
-            pCrawl = pCrawl.children[index]
-
-        # Retorna true para chave nova
-        if not pCrawl.isEndOfWord:
-            pCrawl.isEndOfWord = True
-            pCrawl.indice = self.lastIndex
-            self.lastIndex = self.lastIndex + 1
-            return True, pCrawl.indice
-        return False, pCrawl.indice
-        #print("PALAVRA: {} --- ACC_SCORE: {} --- TWEETS_IN: {} --- SCORE: {}".format(key, pCrawl.acc_score, pCrawl.tweets_in, pCrawl.score))
-
-
-    def search(self, key):
-
-        # Busca uma chave na trie, retorna T ou F
-        pCrawl = self.root
-        length = len(key)
-        for level in range(length):
-            index = self._charToIndex(key[level])
-            if not pCrawl.children[index]:
-                return False
-            pCrawl = pCrawl.children[index]
-
-        return pCrawl != None and pCrawl.isEndOfWord
-
-
-    def searchIndice(self, key):
-
-        # Busca uma chave na trie, retorna o indice
-        pCrawl = self.root
-        length = len(key)
-        for level in range(length):
-            index = self._charToIndex(key[level])
-            if not pCrawl.children[index]:
-                return -1
-            pCrawl = pCrawl.children[index]
-
-        return pCrawl.indice
-
 def leCSVDict(filename):
 
-    with open(filename) as csvfile:
-        tweet_reader = csv.reader(csvfile)
-        content_list = list(tweet_reader)
+    try:
+        with open(filename) as csvfile:
+            tweet_reader = csv.reader(csvfile)
+            content_list = list(tweet_reader)
 
-    return content_list
+        return content_list
+    except IOError:
+        print("Erro ao abrir o arquivo especificado!!!")
+        exit(1)
+
 
 def leCSVTweet(filename):
 
-    with open(filename) as csvfile:
-        tweet_reader = csv.reader(csvfile)
-        content_list = list(tweet_reader)
+    try:
+        with open(filename) as csvfile:
+            tweet_reader = csv.reader(csvfile)
+            content_list = list(tweet_reader)
 
-    return content_list
+        return content_list
+    except IOError:
+        print("Erro ao abrir o arquivo especificado!!!")
+        exit(1)
 
 def writeCSVTweet(filename, orig_tweet, tweet_score):
 
@@ -284,11 +163,6 @@ def writeCSVTweet(filename, orig_tweet, tweet_score):
             for item in range(len(orig_tweet)):
                 f.write(orig_tweet[item]+";"+str(tweet_score[item])+"\n")
 
-def writeCSVSearchResults(filename, tweets):
-    out_file = filename.strip(".csv")+"_search.csv"
-    with open(out_file, 'w') as f:
-        for item in range(len(tweets)):
-            f.write(tweets[item])
 
 def tweetnScore(content):
 
@@ -320,10 +194,7 @@ def formatTweet(tweets, total_tweets):
         # Remove palavras de tamanho <= 2
         tweets[tweet] = re.sub(r'\b\w{1,2}\b', '', tweets[tweet])
 
-
-
         # tweets estão sem palavras de tamanho <= 2, sem caracteres especiais soltos e foram transformados para minúsculo
-
 
     return tweets
 
@@ -343,32 +214,18 @@ def addDict(tweets, trie, tweet_score):
                 else:
                     # alterar informações do token no dicionário caso já exista
                     trie.editNode(token[1], tweet_score[tweet])
-                    #print("PALAVRA JA NA TRIE!!!")
 
-
-def calculateSentiment(tweets, trie, trieArquivo, arqInvert):
+def calculateSentiment(tweets, trie):
 
     sum = [0]*len(tweets)
-    index = 0
+
     for tweet in range(len(tweets)):
-        
         tweets[tweet] = tweets[tweet].split()
-        #print(tweets[tweet])
         for word in tweets[tweet]:
-            Nexistia, indice = trieArquivo.insert(word)
-            if Nexistia:
-                #print("word: {}\t".format(word))
-                #print("indice: {}\t".format(indice))
-                indexxx = arqInvert.insertWord()
-                #print("indiceArq: {}\n".format(indexxx))
-            arqInvert.insertDoc(indice, index)
             found = trie.searchScore(word)
-            #print("found = {}".format(found))
             if (found != 0):
                 # se achou a palavra e score não é zero, somar o score dela
-                #print("word = {}".format(word))
                 sum[tweet] = sum[tweet] + found
-        index = index + 1
     # normaliza sentimentos para -1, 0, 1
     for soma in range(len(sum)):
         if sum[soma] > 0.1:
@@ -379,15 +236,55 @@ def calculateSentiment(tweets, trie, trieArquivo, arqInvert):
             sum[soma] = 0
             # se não achou a palavra ou score é zero, não fazer nada (somar 0)
 
-    return sum, trieArquivo, arqInvert
+    return sum
+
+def dicionarioOcorrencias(tweets):
+
+    wordDict = {}
+    arqInvertido = {}
+    index = 0
+    for tweet in range(len(tweets)):
+        tweets[tweet] = tweets[tweet].split()
+        for word in tweets[tweet]:
+            if word in list(wordDict.keys()):
+                # adiciona linha em que a palavra aparece
+                if tweet not in arqInvertido[wordDict[word]]:
+                    arqInvertido[wordDict[word]].append(tweet)
+            else:
+                # adiciona a palavra e o numero da linha em que aparece
+                wordDict[word] = index
+                arqInvertido[index] = [tweet]
+                index = index + 1
+                
+                
+    return wordDict, arqInvertido
+
+def searchWord(dict, arq, word):
+
+    if word in dict.keys():
+        return arq[dict[word]]
+    else:
+        return [-1]
+
+def writeCSVSearch(filename, linhas, tweets, scores, word):
+    out_file = filename.strip(".csv")+"_"+word+".csv"
+    with open(out_file, 'w') as f:
+        for item in linhas:
+            f.write(tweets[item] + ";" + str(scores[item]) + "\n")
+
+def writeCSVSearchnFeel(filename, linhas, tweets, scores, word, feel):
+    out_file = filename.strip(".csv") + "_" + word + "_pol_" + str(feel) + ".csv"
+    with open(out_file, 'w') as f:
+        for item in linhas:
+            print("TWEET = {}".format(tweets[item]))
+            if int(scores[item]) == feel:
+                f.write(' '.join(tweets[item]) + ";" + str(scores[item]) + "\n")
 
 
 def main():
 
     # inicializa uma Trie
     trie = Trie()
-    trieArquivo = TrieArquivo()
-    arqInvert = arquivoInvertido()
 
     flag_end = 0
     while flag_end == 0:
@@ -402,15 +299,15 @@ def main():
             input_file = input("Digite o nome do arquivo CSV (para calculo de sentimento): ")
             content_list = leCSVTweet(input_file)
         elif option == 3:
-            print("\n\nAbertura de CSV para pesquisa por palavra")
-            input_file = input("Digite o nome do arquivo CSV no qual deseja pesquisar: ")
-            searchWord = input("\nDigite a palavra que deseja pesquisar: ")
+            print("\n\nAbertura de CSV para pesquisa de palavra")
+            input_file = input("Digite o nome do arquivo CSV para pesquisa: ")
+            search = input("Digite a palavra a ser pesquisada: ").lower()
             content_list = leCSVTweet(input_file)
         elif option == 4:
-            print("\n\nAbertura de CSV para pesquisa por palavra e sentimento")
-            input_file = input("Digite o nome do arquivo CSV no qual deseja pesquisar: ")
-            searchWord = input("\nDigite a palavra que deseja pesquisar: ")
-            searchFeel = float(input("\nDigite o sentimento dos tweets para pesquisar: "))
+            print("\n\nAbertura de CSV para pesquisa de palavra")
+            input_file = input("Digite o nome do arquivo CSV para pesquisa: ")
+            search = input("Digite a palavra a ser pesquisada: ").lower()
+            feel = int(input("Digite o sentimento para filtrar (-1, 0, 1): "))
             content_list = leCSVTweet(input_file)
         elif option == 5:
             flag_end = 1
@@ -432,15 +329,6 @@ def main():
             # se não estiver, adiciona à árvore com as informações do tweet (acc_score = score do tweet, tweets_in = 1, score = acc_score / tweets_in)
             addDict(formatted_tweets, trie, tweet_score)
 
-            # uma forma de armazenar a árvore - percorrer ela em largura, sempre que achar folha em algum nível, armazenar ela e informações
-            # separando da forma PALAVRA, SCORE, ACC_SCORE, TWEETS_IN (4 colunas)
-            #
-            # uma forma de leitura - ler palavra até a ",", marcar como folha e inserir informações
-
-
-
-            # Quando precisar fazer a busca de chaves em tweet, será necessário remover os acentos dos tweets (para comparação)
-
         if option == 2:
 
             tweet_content = tweetsList(content_list)
@@ -452,48 +340,53 @@ def main():
             formatted_tweets = formatTweet(tweet_content, total_tweets)
 
             # lista de somas referentes ao tweet. Por exemplo o tweet da linha 0 terá sua soma em tweet_sum[0]
-            tweet_sum, trieArquivo, arqInvert = calculateSentiment(formatted_tweets, trie, trieArquivo, arqInvert)
-
-            #for item in range(len(tweet_sum)):
-                #print("TWEET: {} \nSCORE: {}\n\n".format(tweet_content[item], tweet_sum[item]))
+            tweet_sum = calculateSentiment(formatted_tweets, trie)
 
             writeCSVTweet(input_file, tweets_copy, tweet_sum)
 
         if option == 3:
-        
-            searchResults = []
-            #if not (trieArquivo and arqInvert):
-                
-            tweet_content = tweetsList(content_list)
+
+            wordDict = {}
+            arqInvertido = {}
+
+            tweet_content, tweet_score = tweetnScore(content_list)
+
+            tweets_copy = copy.deepcopy(tweet_content)
+
             total_tweets = len(tweet_content)
+
             formatted_tweets = formatTweet(tweet_content, total_tweets)
-            tweet_sum, trieArquivo, arqInvert = calculateSentiment(formatted_tweets, trie, trieArquivo, arqInvert)
-            
-            indice = trieArquivo.searchIndice(searchWord)
-            if indice != -1:
-                searchResults = arqInvert.returnTweets(input_file, indice)
-            
-            
-            writeCSVSearchResults(input_file, searchResults)
+
+            wordDict, arqInvertido = dicionarioOcorrencias(formatted_tweets)
+
+            linhas = searchWord(wordDict, arqInvertido, search)
+
+            if linhas[0] == -1:
+                print("'{}' não encontrada no arquivo".format(search))
+            else:
+                writeCSVSearch(input_file, linhas, tweets_copy, tweet_score, search)
 
         if option == 4:
-            searchResults = []
-            tweet_content = tweetsList(content_list)
+
+            wordDict = {}
+            arqInvertido = {}
+
+            # tweets em uma lista e scores em outra
+            tweet_content, tweet_score = tweetnScore(content_list)
+
             total_tweets = len(tweet_content)
+
             formatted_tweets = formatTweet(tweet_content, total_tweets)
-            tweet_sum, trieArquivo, arqInvert = calculateSentiment(formatted_tweets, trie, trieArquivo, arqInvert)
-            indice = trieArquivo.searchIndice(searchWord)
-            if indice != -1:
-                if searchFeel > 0.1:
-                    searchFeel = 1;
-                if searchFeel < -0.1:
-                    searchFeel = -1;
-                if -0.1 < searchFeel < 0.1:
-                    searchFeel = 0;
-                searchResults = arqInvert.returnTweetsFeel(input_file, indice, searchFeel)
-            
-            
-            writeCSVSearchResults(input_file, searchResults)
+
+            wordDict, arqInvertido = dicionarioOcorrencias(formatted_tweets)
+
+            linhas = searchWord(wordDict, arqInvertido, search)
+
+            if linhas[0] == -1:
+                print("'{}' não encontrada no arquivo".format(search))
+            else:
+                writeCSVSearchnFeel(input_file, linhas, tweet_content, tweet_score, search, feel)
+
     exit(0)
 
 if __name__ == "__main__":
