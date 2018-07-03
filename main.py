@@ -16,7 +16,7 @@ def menu():
     print("1 - Abrir arquivo para dicionário")
     print("2 - Abrir arquivo para determinar sentimentos")
     print("3 - Buscar tweets por palavra")
-    print("4 - Buscar tweets por palavra e polaridade (+.-.0)")
+    print("4 - Buscar tweets por palavra e polaridade (+,-,0)")
     print("5 - Sair do programa")
     print("\n\n\n")
     option = int(input("Digite a opção desejada: "))
@@ -27,7 +27,7 @@ def menu():
         print("1 - Abrir arquivo para dicionário")
         print("2 - Abrir arquivo para determinar sentimentos")
         print("3 - Buscar tweets por palavra")
-        print("4 - Buscar tweets por palavra e polaridade (+.-.0)")
+        print("4 - Buscar tweets por palavra e polaridade (+,-,0)")
         print("5 - Sair do programa")
         print("\n\n\n")
         option = int(input("Digite a opção desejada: "))
@@ -238,6 +238,44 @@ def calculateSentiment(tweets, trie):
 
     return sum
 
+def dicionarioOcorrencias(tweets):
+
+    wordDict = {}
+
+    for tweet in range(len(tweets)):
+        tweets[tweet] = tweets[tweet].split()
+        for word in tweets[tweet]:
+            if word in list(wordDict.keys()):
+                # adiciona linha em que a palavra aparece
+                if tweet not in wordDict[word]:
+                    wordDict[word].append(tweet)
+            else:
+                # adiciona a palavra e o numero da linha em que aparece
+                wordDict[word] = [tweet]
+    return wordDict
+
+def searchWord(dict, word):
+
+    if word in dict.keys():
+        return dict[word]
+    else:
+        return [-1]
+
+def writeCSVSearch(filename, linhas, tweets, scores, word):
+    out_file = filename.strip(".csv")+"_"+word+".csv"
+    with open(out_file, 'w') as f:
+        for item in linhas:
+            f.write(tweets[item] + ";" + str(scores[item]) + "\n")
+
+def writeCSVSearchnFeel(filename, linhas, tweets, scores, word, feel):
+    out_file = filename.strip(".csv") + "_" + word + "_pol_" + str(feel) + ".csv"
+    with open(out_file, 'w') as f:
+        for item in linhas:
+            print("TWEET = {}".format(tweets[item]))
+            if int(scores[item]) == feel:
+                f.write(' '.join(tweets[item]) + ";" + str(scores[item]) + "\n")
+
+
 def main():
 
     # inicializa uma Trie
@@ -256,11 +294,16 @@ def main():
             input_file = input("Digite o nome do arquivo CSV (para calculo de sentimento): ")
             content_list = leCSVTweet(input_file)
         elif option == 3:
-            print("AINDA NAO IMPLEMENTADO")
-            flag_end = 1
+            print("\n\nAbertura de CSV para pesquisa de palavra")
+            input_file = input("Digite o nome do arquivo CSV para pesquisa: ")
+            search = input("Digite a palavra a ser pesquisada: ").lower()
+            content_list = leCSVTweet(input_file)
         elif option == 4:
-            print("AINDA NAO IMPLEMENTADO")
-            flag_end = 1
+            print("\n\nAbertura de CSV para pesquisa de palavra")
+            input_file = input("Digite o nome do arquivo CSV para pesquisa: ")
+            search = input("Digite a palavra a ser pesquisada: ").lower()
+            feel = int(input("Digite o sentimento para filtrar (-1, 0, 1): "))
+            content_list = leCSVTweet(input_file)
         elif option == 5:
             flag_end = 1
 
@@ -295,6 +338,47 @@ def main():
             tweet_sum = calculateSentiment(formatted_tweets, trie)
 
             writeCSVTweet(input_file, tweets_copy, tweet_sum)
+
+        if option == 3:
+
+            wordDict = {}
+
+            tweet_content, tweet_score = tweetnScore(content_list)
+
+            tweets_copy = copy.deepcopy(tweet_content)
+
+            total_tweets = len(tweet_content)
+
+            formatted_tweets = formatTweet(tweet_content, total_tweets)
+
+            wordDict = dicionarioOcorrencias(formatted_tweets)
+
+            linhas = searchWord(wordDict, search)
+
+            if linhas[0] == -1:
+                print("'{}' não encontrada no arquivo".format(search))
+            else:
+                writeCSVSearch(input_file, linhas, tweets_copy, tweet_score, search)
+
+        if option == 4:
+
+            wordDict = {}
+
+            # tweets em uma lista e scores em outra
+            tweet_content, tweet_score = tweetnScore(content_list)
+
+            total_tweets = len(tweet_content)
+
+            formatted_tweets = formatTweet(tweet_content, total_tweets)
+
+            wordDict = dicionarioOcorrencias(formatted_tweets)
+
+            linhas = searchWord(wordDict, search)
+
+            if linhas[0] == -1:
+                print("'{}' não encontrada no arquivo".format(search))
+            else:
+                writeCSVSearchnFeel(input_file, linhas, tweet_content, tweet_score, search, feel)
 
     exit(0)
 
